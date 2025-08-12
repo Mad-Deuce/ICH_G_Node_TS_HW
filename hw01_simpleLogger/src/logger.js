@@ -4,7 +4,7 @@ import path from "node:path";
 const logPath = path.resolve("src", "logs", "logs.txt");
 
 function logMessage(message = "test log") {
-    fs.appendFile(logPath, `\n ${new Date().toUTCString()} --- ${message}`, (error) => {
+    fs.appendFile(logPath, `\n ${new Date().toLocaleString()} --- ${message}`, (error) => {
         console.log(error);
     });
 }
