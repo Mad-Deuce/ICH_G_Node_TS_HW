@@ -1,12 +1,10 @@
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 
 const logPath = path.resolve("src", "logs", "logs.txt");
 
-function logMessage(message = "test log") {
-    fs.appendFile(logPath, `\n ${new Date().toLocaleString()} --- ${message}`, (error) => {
-        console.log(error);
-    });
+async function logMessage(message = "test log") {
+    await fs.appendFile(logPath, `\n ${new Date().toLocaleString()} --- ${message}`);
 }
 
 export default logMessage;
