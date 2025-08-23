@@ -10,8 +10,7 @@ const readFromFile = async filePath => {
         return text.toString();
     }
     catch (error) {
-        console.log(error);
-        return false;
+        throw error;
     }
 }
 
