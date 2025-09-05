@@ -1,5 +1,3 @@
-import { DataTypes } from "sequelize";
-
 export const up = async (queryInterface, Sequelize) => {
   await queryInterface.createTable('Apps', {
     id: {
