@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node --loader ts-node/esm src/index.ts",
     "dev": "nodemon",
-    "build": "tsc",
-    "build:vite": "vite build"
+    "build": "vite build"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -20,6 +19,9 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mysql2": "^3.14.4",
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3"
   }
 }
