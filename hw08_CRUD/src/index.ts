@@ -1,6 +1,9 @@
+import "dotenv/config";
+import connectDatabase from "./db/connectDatabase";
 import startServer from "./server";
 
-const bootstrap = () => {
+const bootstrap = async () => {
+  await connectDatabase();
   startServer();
 };
 
