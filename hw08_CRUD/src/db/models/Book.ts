@@ -19,9 +19,13 @@ const Book = sequelize.define(
       allowNull: false,
     },
   },
-  { timestamps: true, paranoid: true }
+  {
+    timestamps: true,
+    paranoid: true,
+    indexes: [{ unique: true, fields: ["title", "deletedAt"] }],
+  }
 );
 
-// Book.sync({ force: true });
+Book.sync({ force: true });
 
 export default Book;
