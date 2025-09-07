@@ -3,7 +3,7 @@
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",
-    "outDir": "./dist",             // was commented - i modified this
+    "outDir": "./dist",                     // was commented - i modified this
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
@@ -16,13 +16,13 @@
     // and npm install -D @types/node
 
     // Other Outputs
-    "sourceMap": false,                // was true - i modified this
-    "declaration": false,              // was true - i modified this
-    "declarationMap": false,           // was true - i modified this
+    "sourceMap": false,                     // was true - i modified this
+    "declaration": false,                   // was true - i modified this
+    "declarationMap": false,                // was true - i modified this
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,   // was true - i modified this
+    "exactOptionalPropertyTypes": false,    // was true - i modified this
 
     // Style Options
     // "noImplicitReturns": true,
@@ -35,7 +35,7 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,          // was true - i modified this
+    "verbatimModuleSyntax": false,            // was true - i modified this
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
