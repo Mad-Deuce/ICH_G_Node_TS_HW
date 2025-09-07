@@ -11,7 +11,9 @@
     "rootDir": "./src",
     "allowArbitraryExtensions": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "strictPropertyInitialization": false,
+    "allowJs": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
