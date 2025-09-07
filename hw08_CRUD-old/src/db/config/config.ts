@@ -1,6 +1,15 @@
-import "dotenv/config";
+// import "ts-node/register";
+//  require('ts-node/register');
 
-const configData = {
+// import { IConfigData } from "./IConfigData";
+
+import { Options } from "sequelize";
+
+interface IConfigData {
+  [key: string]: Options;
+}
+
+let configData: IConfigData = {
   development: {
     username: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,

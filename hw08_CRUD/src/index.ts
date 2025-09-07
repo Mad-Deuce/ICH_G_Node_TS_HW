@@ -1,10 +1,4 @@
-import "dotenv/config";
-import { startServer } from "./server.ts";
-import { connectDatabase } from "./db/connectDatabase.ts";
+import startServer from "./server";
 
-async function bootstrap(): Promise<void> {
-  await connectDatabase();
-  startServer();
-}
-
-bootstrap();
+console.log("----- ts working");
+startServer();
