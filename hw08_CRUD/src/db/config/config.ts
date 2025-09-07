@@ -1,10 +1,8 @@
 import { Options } from "sequelize";
 
-interface IConfigData {
+let configData: {
   [key: string]: Options;
-}
-
-let configData: IConfigData = {
+} = {
   development: {
     username: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
@@ -36,4 +34,4 @@ let configData: IConfigData = {
   },
 };
 
-export default configData; 
+export default configData;
