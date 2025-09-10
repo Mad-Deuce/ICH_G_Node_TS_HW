@@ -11,6 +11,10 @@ export const up = async (queryInterface, Sequelize) => {
       allowNull: false,
       unique: true,
     },
+    verified: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+    },
     password: {
       type: Sequelize.STRING,
       allowNull: false,

@@ -2,11 +2,26 @@ import { DataTypes } from "sequelize";
 
 import sequelize from "../sequelize";
 
+import {
+  emailPattern,
+  passwordPattern,
+} from "../../validation/patterns/auth.patterns";
+
 const User = sequelize.define("user", {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
+    validate: {
+      is: {
+        args: emailPattern.value,
+        msg: emailPattern.message,
+      },
+    },
+  },
+  verified: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
   },
   password: {
     type: DataTypes.STRING,
@@ -25,7 +40,7 @@ const User = sequelize.define("user", {
       key: "id",
     },
     onUpdate: "CASCADE",
-    onDelete: "SET NULLS"
+    onDelete: "SET NULLS",
   },
   fullname: {
     type: DataTypes.STRING,
