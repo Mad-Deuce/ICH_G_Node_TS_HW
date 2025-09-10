@@ -1,6 +1,5 @@
-
 export const up = async (queryInterface, Sequelize) => {
-  await queryInterface.createTable('Users2', {
+  await queryInterface.createTable('Roles', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -10,6 +9,7 @@ export const up = async (queryInterface, Sequelize) => {
     name: {
       type: Sequelize.STRING,
       allowNull: false,
+      unique: true,
     },
     createdAt: {
       allowNull: false,
@@ -23,6 +23,6 @@ export const up = async (queryInterface, Sequelize) => {
 }
 
 export const down = async (queryInterface, Sequelize) => {
-  await queryInterface.dropTable('Users2');
+  await queryInterface.dropTable('Roles');
 }
 

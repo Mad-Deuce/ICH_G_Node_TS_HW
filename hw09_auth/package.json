@@ -10,7 +10,7 @@
     "docker:up": "docker-compose up",
     "migration:generate": "npx sequelize-cli migration:generate --name my-migration",
     "migration:up": "npx sequelize-cli db:migrate",
-    "migration:down": "npx sequelize-cli db:migrate:undo",
+    "migration:down": "npx sequelize-cli db:migrate:undo:all",
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "npx tsc"
