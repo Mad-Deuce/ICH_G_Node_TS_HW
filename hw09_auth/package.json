@@ -8,6 +8,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "docker:up": "docker-compose up",
+    "migration:generate": "npx sequelize-cli migration:generate --name my-migration",
+    "migration:up": "npx sequelize-cli db:migrate",
+    "migration:down": "npx sequelize-cli db:migrate:undo",
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "npx tsc"
@@ -26,6 +29,7 @@
     "joi": "^18.0.1",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3"
   }
 }
