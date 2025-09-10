@@ -1,10 +1,10 @@
 export const up = async (queryInterface, Sequelize) => {
-  await queryInterface.addConstraint('Sessions', {
+  await queryInterface.addConstraint('sessions', {
     fields: ['userId'], // The column in 'YourTableName' that will be the foreign key
     type: 'foreign key',
     name: 'FK_Sessions_Roles', // A descriptive name for your constraint
     references: {
-      table: 'Users', // The table being referenced
+      table: 'users', // The table being referenced
       field: 'id', // The primary key column in 'ReferenceTableName'
     },
     onDelete: 'CASCADE', // Optional: Define behavior on deletion of the referenced row
@@ -13,6 +13,6 @@ export const up = async (queryInterface, Sequelize) => {
 }
 
 export const down = async (queryInterface, Sequelize) => {
-  await queryInterface.dropTable('Sessions');
+  await queryInterface.dropTable('sessions');
 }
 

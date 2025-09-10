@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 
-export const signupController = (req: Request, res: Response) => {
-  res.status(201).json("In signup controller");
+import { signupUser } from "../services/auth.service";
+
+export const signupController = async (req: Request, res: Response) => {
+  await signupUser(req.body);
+  res.status(201).json({ message: "Signup successfully" });
 };

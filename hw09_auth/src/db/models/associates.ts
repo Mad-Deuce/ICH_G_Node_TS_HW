@@ -12,12 +12,12 @@ User.belongsTo(Role, {
   as: "role",
 });
 
-Session.hasOne(User, {
-  foreignKey: "userId",
-  as: "user",
-});
+// Session.hasOne(User, {
+//   foreignKey: "userId",
+//   as: "user",
+// });
 
-User.belongsTo(Session, {
-  foreignKey: "id",
-  as: "session",
-});
+// User.belongsTo(Session, {
+//   foreignKey: "id",
+//   as: "session",
+// });

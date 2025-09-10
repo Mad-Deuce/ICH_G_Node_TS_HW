@@ -22,6 +22,7 @@ const User = sequelize.define("user", {
   verified: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
+    defaultValue: false
   },
   password: {
     type: DataTypes.STRING,
@@ -35,6 +36,7 @@ const User = sequelize.define("user", {
   roleId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    defaultValue: 2,
     references: {
       model: "roles",
       key: "id",
