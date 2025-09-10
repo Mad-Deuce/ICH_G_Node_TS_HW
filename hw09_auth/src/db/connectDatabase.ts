@@ -1,4 +1,5 @@
 import sequelize from "./sequelize";
+import "./models/associates";
 
 const connectDatabase = async () => {
   try {
