@@ -17,7 +17,7 @@ export const signupUser = async (payload: any) => {
   const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a href="${BASE_URL}/api/auth/verify?token=${token}" target="_blank">Click verify email</a>`,
+    html: `<a href="${BASE_URL}/api/auth/email-confirm?token=${token}" target="_blank">Confirm email</a>`,
   };
 
   await sendEmail(verifyEmail);
