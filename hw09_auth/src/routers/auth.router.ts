@@ -1,16 +1,19 @@
 import { Router } from "express";
 
 import validateBody from "../decorators/validateBody";
-import { signupSchema } from "../validation/schemas/auth.schemas";
+import { signupSchema, loginSchema } from "../validation/schemas/auth.schemas";
 
 import {
   signupController,
   emailConfirmController,
+  loginController,
 } from "../controllers/auth.controller";
 
 const authRouter = Router();
 
 authRouter.post("/signup", validateBody(signupSchema), signupController);
 authRouter.get("/email-confirm", emailConfirmController);
+
+authRouter.post("/login", validateBody(loginSchema), loginController);
 
 export default authRouter;

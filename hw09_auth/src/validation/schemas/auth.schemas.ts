@@ -12,3 +12,10 @@ export const signupSchema = Joi.object({
   fullname: Joi.string().trim(),
   username: Joi.string().trim(),
 });
+
+export const loginSchema = Joi.object({
+  email: Joi.string().trim().pattern(emailPattern.value).min(5).required(),
+  password: Joi.string()
+    .trim()
+    .required(),
+});
