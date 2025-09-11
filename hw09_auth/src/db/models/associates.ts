@@ -2,22 +2,22 @@ import User from "./User";
 import Role from "./Role";
 import Session from "./Session";
 
+User.belongsTo(Role, {
+  foreignKey: "roleId",
+  as: "role",
+});
+
+Session.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+User.hasOne(Session, {
+  foreignKey: "userId",
+  as: "session",
+});
+
 Role.hasMany(User, {
   foreignKey: "roleId",
   as: "users",
 });
-
-User.belongsTo(Role, {
-  foreignKey: "id",
-  as: "role",
-});
-
-// Session.hasOne(User, {
-//   foreignKey: "userId",
-//   as: "user",
-// });
-
-// User.belongsTo(Session, {
-//   foreignKey: "id",
-//   as: "session",
-// });

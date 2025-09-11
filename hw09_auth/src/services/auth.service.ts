@@ -14,6 +14,7 @@ export const signupUser = async (payload: any) => {
   const newUser = await User.create({ ...payload, password: passwordHash });
 
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+  console.log(token);
 
   const verifyEmail = {
     to: email,
