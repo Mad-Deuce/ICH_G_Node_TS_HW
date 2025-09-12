@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import HttpError from "../utils/HttpError";
 import sendEmail from "../utils/sendEmail";
 import { hashPassword, comparePassword } from "../utils/hashPassword";
+import createTokens from "../utils/createTokens";
 
 import User from "../db/models/User";
 import Session from "../db/models/Session";
@@ -20,7 +21,6 @@ export const signupUser = async (payload: any) => {
   const newUser = await User.create({ ...payload, password: passwordHash });
 
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
-  console.log(token);
 
   const verifyEmail = {
     to: email,
@@ -63,40 +63,25 @@ export const emailConfirm = async (token: any) => {
 };
 
 export const loginUser = async (payload: any) => {
-  const { password, email } = payload;
+  const { password: loginPassword, email } = payload;
 
   const user = await User.findOne({ where: { email: email } });
   if (!user) throw new HttpError(401, "Email or password invalid");
-  if (!user.get("verified")) throw new HttpError(403, "Email not verified");
+  const { id, verified, password, fullname, username } = user.toJSON();
 
-  const passwordCompare = comparePassword(
-    password,
-    String(user.get("password"))
-  );
-  if (!passwordCompare) throw new HttpError(401, "Email or password invalid");
+  if (!verified) throw new HttpError(403, "Email not verified");
 
-  await Session.destroy({ where: { userId: user.get("id") } });
+  if (!comparePassword(loginPassword, password))
+    throw new HttpError(401, "Email or password invalid");
 
-  const accessToken = jwt.sign({ email }, JWT_SECRET, {
-    expiresIn: Number(ACCESS_TOKEN_MAX_AGE_MS),
-  });
-  const refreshToken = jwt.sign({ email }, JWT_SECRET, {
-    expiresIn: Number(REFRESH_TOKEN_MAX_AGE_MS),
-  });
+  await Session.destroy({ where: { userId: id } });
 
-  await Session.create({
-    userId: user.get("id"),
-    accessToken,
-    refreshToken,
-  });
+  const { accessToken, refreshToken } = createTokens({ email });
+
+  await Session.create({ userId: id, accessToken, refreshToken });
 
   return {
-    user: {
-      id: user.get("id"),
-      email: user.get("email"),
-      fullname: user.get("fullname"),
-      username: user.get("username"),
-    },
+    user: { id, email, fullname, username },
     accessToken,
     refreshToken,
   };
@@ -118,12 +103,7 @@ export const refreshTokens = async (
   if (!user) throw new HttpError(401, "User not found");
   const { id, email, fullname, username } = user;
 
-  const accessToken = jwt.sign({ email }, JWT_SECRET, {
-    expiresIn: Number(ACCESS_TOKEN_MAX_AGE_MS),
-  });
-  const refreshToken = jwt.sign({ email }, JWT_SECRET, {
-    expiresIn: Number(REFRESH_TOKEN_MAX_AGE_MS),
-  });
+  const { accessToken, refreshToken } = createTokens({ email });
 
   await session.update({ accessToken, refreshToken });
 
