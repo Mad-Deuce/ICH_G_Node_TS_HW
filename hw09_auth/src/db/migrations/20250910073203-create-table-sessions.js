@@ -13,14 +13,8 @@ export const up = async (queryInterface, Sequelize) => {
     accessToken: {
       type: Sequelize.STRING,
     },
-    accessTokenExpired: {
-      type: Sequelize.DATE,
-    },
     refreshToken: {
       type: Sequelize.STRING,
-    },
-    refreshTokenExpired: {
-      type: Sequelize.DATE,
     },
     createdAt: {
       allowNull: false,

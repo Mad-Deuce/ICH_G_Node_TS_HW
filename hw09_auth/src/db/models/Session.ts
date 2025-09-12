@@ -16,15 +16,9 @@ const Session = sequelize.define("session", {
   accessToken: {
     type: DataTypes.STRING,
   },
-  accessTokenExpired: {
-    type: DataTypes.DATE,
-  },
   refreshToken: {
     type: DataTypes.STRING,
-  },
-  refreshTokenExpired: {
-    type: DataTypes.DATE,
-  },
+  }
 });
 
 export default Session;

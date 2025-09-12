@@ -73,7 +73,6 @@ export const loginUser = async (payload: any) => {
     password,
     String(user.get("password"))
   );
-
   if (!passwordCompare) throw new HttpError(401, "Email or password invalid");
 
   await Session.destroy({ where: { userId: user.get("id") } });
@@ -89,9 +88,6 @@ export const loginUser = async (payload: any) => {
     userId: user.get("id"),
     accessToken,
     refreshToken,
-    accessTokenExpired: new Date().getTime() + Number(ACCESS_TOKEN_MAX_AGE_MS),
-    refreshTokenExpired:
-      new Date().getTime() + Number(REFRESH_TOKEN_MAX_AGE_MS),
   });
 
   return {
@@ -101,6 +97,38 @@ export const loginUser = async (payload: any) => {
       fullname: user.get("fullname"),
       username: user.get("username"),
     },
+    accessToken,
+    refreshToken,
+  };
+};
+
+export const refreshTokens = async (
+  currentRefreshToken: string | undefined
+) => {
+  if (!currentRefreshToken) throw new HttpError(401, "RefreshToken not found");
+  jwt.verify(currentRefreshToken, JWT_SECRET);
+
+  const session = await Session.findOne({
+    where: { refreshToken: currentRefreshToken },
+    include: { model: User, as: "user" },
+  });
+  if (!session) throw new HttpError(401, "Session not found");
+
+  const { user } = session.toJSON();
+  if (!user) throw new HttpError(401, "User not found");
+  const { id, email, fullname, username } = user;
+
+  const accessToken = jwt.sign({ email }, JWT_SECRET, {
+    expiresIn: Number(ACCESS_TOKEN_MAX_AGE_MS),
+  });
+  const refreshToken = jwt.sign({ email }, JWT_SECRET, {
+    expiresIn: Number(REFRESH_TOKEN_MAX_AGE_MS),
+  });
+
+  await session.update({ accessToken, refreshToken });
+
+  return {
+    user: { id, email, fullname, username },
     accessToken,
     refreshToken,
   };
