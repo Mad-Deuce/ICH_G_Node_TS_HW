@@ -14,10 +14,6 @@ const errorHandler = (error: any, req: Request, res: Response, next: any) => {
     status = 401;
   }
 
-  if (error instanceof HttpError) {
-    status = 400;
-  }
-
   if (error instanceof ValidationError) {
     status = 400;
   }

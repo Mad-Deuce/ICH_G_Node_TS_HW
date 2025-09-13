@@ -5,6 +5,9 @@ import {
   emailConfirm,
   loginUser,
   refreshTokens,
+  logoutUser,
+  deleteUser,
+  confirmDeleteUser,
 } from "../services/auth.service";
 
 const {
@@ -14,12 +17,12 @@ const {
 
 export const signupController = async (req: Request, res: Response) => {
   await signupUser(req.body);
-  res.status(201).json({ message: "Signup successfully" });
+  res.status(201).json({ message: "Signup successfully, confirm email" });
 };
 
 export const emailConfirmController = async (req: Request, res: Response) => {
   const user = await emailConfirm(req.query.token);
-  res.status(200).json({ message: "Email confirmed", user });
+  res.status(200).json({ message: "Email successfully confirmed", user });
 };
 
 export const loginController = async (req: Request, res: Response) => {
@@ -53,4 +56,27 @@ export const refreshController = async (req: Request, res: Response) => {
     })
     .status(201)
     .json({ message: "Tokens successfully updated", user });
+};
+
+export const logoutController = async (req: Request, res: Response) => {
+  await logoutUser(req.user);
+  res
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .status(200)
+    .json({ message: "Logout successfully" });
+};
+
+export const deleteController = async (req: Request, res: Response) => {
+  await deleteUser(req.user.email);
+  res
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .status(200)
+    .json({ message: "Confirm delete account on email" });
+};
+
+export const confirmDeleteController = async (req: Request, res: Response) => {
+  await confirmDeleteUser(req.query.token);
+  res.status(204).json({ message: "Account successfully deleted" });
 };

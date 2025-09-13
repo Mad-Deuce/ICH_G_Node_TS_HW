@@ -7,11 +7,10 @@ const messageList: { [key: number]: string } = {
 };
 
 class HttpError extends Error {
-  constructor(
-    status: number,
-    message: string | undefined = messageList[status]
-  ) {
+  status: number;
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
   }
 }
 

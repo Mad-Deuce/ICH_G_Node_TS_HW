@@ -113,3 +113,42 @@ export const refreshTokens = async (
     refreshToken,
   };
 };
+
+export const logoutUser = async (user: any) => {
+  await Session.destroy({ where: { userId: user.id } });
+};
+
+export const deleteUser = async (email: string) => {
+  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+
+  const verifyEmail = {
+    to: email,
+    subject: "Confirm account delete",
+    html: `<a href="${BASE_URL}/api/auth/delete-confirm?token=${token}" target="_blank">Confirm account delete</a>`,
+  };
+
+  await sendEmail(verifyEmail);
+};
+
+export const confirmDeleteUser = async (token: any) => {
+  try {
+    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+    let email: string;
+    if (typeof decoded === "object" && "email" in decoded) {
+      email = decoded.email;
+    } else {
+      throw new HttpError(401, "Invalid token payload");
+    }
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+    await user.destroy();
+  } catch (error: any) {
+    throw new HttpError(401, error.message);
+  }
+};

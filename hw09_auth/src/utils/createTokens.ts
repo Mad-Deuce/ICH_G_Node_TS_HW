@@ -7,10 +7,11 @@ const {
 } = process.env;
 
 const createTokens = (payload: any) => {
-  const accessToken = jwt.sign({ payload }, JWT_SECRET, {
+  
+  const accessToken = jwt.sign({ ...payload }, JWT_SECRET, {
     expiresIn: Number(ACCESS_TOKEN_MAX_AGE_MS),
   });
-  const refreshToken = jwt.sign({ payload }, JWT_SECRET, {
+  const refreshToken = jwt.sign( payload , JWT_SECRET, {
     expiresIn: Number(REFRESH_TOKEN_MAX_AGE_MS),
   });
 
