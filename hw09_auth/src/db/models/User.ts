@@ -22,7 +22,7 @@ const User = sequelize.define("user", {
   verified: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   },
   password: {
     type: DataTypes.STRING,

@@ -33,33 +33,29 @@ export const signupUser = async (payload: any) => {
   return newUser;
 };
 
-export const emailConfirm = async (token: any) => {
-  try {
-    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-    let email: string;
-    if (typeof decoded === "object" && "email" in decoded) {
-      email = decoded.email;
-    } else {
-      throw new HttpError(401, "Invalid token payload");
-    }
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    });
-    if (!user) {
-      throw new HttpError(404, "User not found");
-    }
-    await user.update({ verified: true });
-    return {
-      id: user.get("id"),
-      email: user.get("email"),
-      fullname: user.get("fullname"),
-      username: user.get("username"),
-    };
-  } catch (error: any) {
-    throw new HttpError(401, error.message);
+export const confirmEmail = async (token: any) => {
+  const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+  let email: string;
+  if (typeof decoded === "object" && "email" in decoded) {
+    email = decoded.email;
+  } else {
+    throw new HttpError(401, "Invalid token payload");
   }
+  const user = await User.findOne({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
+  await user.update({ verified: true });
+  return {
+    id: user.get("id"),
+    email: user.get("email"),
+    fullname: user.get("fullname"),
+    username: user.get("username"),
+  };
 };
 
 export const loginUser = async (payload: any) => {
@@ -131,24 +127,98 @@ export const deleteUser = async (email: string) => {
 };
 
 export const confirmDeleteUser = async (token: any) => {
-  try {
-    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-    let email: string;
-    if (typeof decoded === "object" && "email" in decoded) {
-      email = decoded.email;
-    } else {
-      throw new HttpError(401, "Invalid token payload");
-    }
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    });
-    if (!user) {
-      throw new HttpError(404, "User not found");
-    }
-    await user.destroy();
-  } catch (error: any) {
-    throw new HttpError(401, error.message);
+  const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+  let email: string;
+  if (typeof decoded === "object" && "email" in decoded) {
+    email = decoded.email;
+  } else {
+    throw new HttpError(401, "Invalid token payload");
   }
+  const user = await User.findOne({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
+  await user.destroy();
+};
+
+export const updateUserPassword = async (userId: number, password: string) => {
+  const passwordHash = hashPassword(password);
+  const user = await User.findOne({
+    where: { id: userId },
+    include: { model: Session, as: "sessions" },
+  });
+  if (!user) throw new HttpError(404, "User not found");
+  user?.update({ password: passwordHash });
+  const { id, email, fullname, username, sessions } = user?.toJSON();
+
+  const { accessToken, refreshToken } = createTokens({ email });
+  sessions.update({ accessToken, refreshToken });
+
+  return {
+    user: {
+      id,
+      email,
+      fullname,
+      username,
+    },
+    accessToken,
+    refreshToken,
+  };
+};
+
+export const resetUserPassword = async (email: string) => {
+  const user = await User.findOne({
+    where: { email },
+  });
+  if (!user) throw new HttpError(404, "User not found");
+
+  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a href="${BASE_URL}/api/auth/reset-password?token=${token}" target="_blank">Confirm reset password</a>`,
+  };
+  await sendEmail(verifyEmail);
+};
+
+export const confirmResetPassword = async (token: any, password: string) => {
+  const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+  let email: string;
+  if (typeof decoded === "object" && "email" in decoded) {
+    email = decoded.email;
+  } else {
+    throw new HttpError(401, "Invalid token payload");
+  }
+  const user = await User.findOne({
+    where: {
+      email,
+    },
+    include: { model: Session, as: "sessions" },
+  });
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
+
+  const passwordHash = hashPassword(password);
+  await user.update({ password: passwordHash });
+
+  const { id, fullname, username, sessions } = user?.toJSON();
+  const { accessToken, refreshToken } = createTokens({ email });
+  sessions.update({ accessToken, refreshToken });
+
+  return {
+    user: {
+      id,
+      email,
+      fullname,
+      username,
+    },
+    accessToken,
+    refreshToken,
+  };
 };
