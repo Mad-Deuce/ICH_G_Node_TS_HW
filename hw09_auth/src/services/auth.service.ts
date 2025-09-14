@@ -8,29 +8,25 @@ import createTokens from "../utils/createTokens";
 import User from "../db/models/User";
 import Session from "../db/models/Session";
 
-const {
-  BASE_URL,
-  JWT_SECRET = "secret",
-  ACCESS_TOKEN_MAX_AGE_MS = 900000,
-  REFRESH_TOKEN_MAX_AGE_MS = 604800000,
-} = process.env;
+const { BASE_URL, FRONTEND_BASE_URL, JWT_SECRET = "secret" } = process.env;
 
 export const signupUser = async (payload: any) => {
   const { password, email } = payload;
-  const passwordHash = hashPassword(password);
-  const newUser = await User.create({ ...payload, password: passwordHash });
+  const passwordHash = await hashPassword(password);
+
+  const user = await User.create({ ...payload, password: passwordHash });
 
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
 
   const verifyEmail = {
     to: email,
     subject: "Verify email",
-    html: `<a href="${BASE_URL}/api/auth/email-confirm?token=${token}" target="_blank">Confirm email</a>`,
+    html: `<a href="${BASE_URL}/api/auth/signup?token=${token}" target="_blank">Confirm email</a>`,
   };
 
   await sendEmail(verifyEmail);
 
-  return newUser;
+  return email;
 };
 
 export const confirmEmail = async (token: any) => {
@@ -50,25 +46,17 @@ export const confirmEmail = async (token: any) => {
     throw new HttpError(404, "User not found");
   }
   await user.update({ verified: true });
-  return {
-    id: user.get("id"),
-    email: user.get("email"),
-    fullname: user.get("fullname"),
-    username: user.get("username"),
-  };
 };
 
-export const loginUser = async (payload: any) => {
-  const { password: loginPassword, email } = payload;
-
-  const user = await User.findOne({ where: { email: email } });
+export const loginUser = async (email: string, loginPassword: string) => {
+  const user = await User.findOne({ where: { email } });
   if (!user) throw new HttpError(401, "Email or password invalid");
   const { id, verified, password, fullname, username } = user.toJSON();
 
-  if (!verified) throw new HttpError(403, "Email not verified");
-
-  if (!comparePassword(loginPassword, password))
+  if (!(await comparePassword(loginPassword, password)))
     throw new HttpError(401, "Email or password invalid");
+
+  if (!verified) throw new HttpError(403, "Email not confirmed");
 
   await Session.destroy({ where: { userId: id } });
 
@@ -110,17 +98,17 @@ export const refreshTokens = async (
   };
 };
 
-export const logoutUser = async (user: any) => {
-  await Session.destroy({ where: { userId: user.id } });
+export const logoutUser = async (id: number) => {
+  await Session.destroy({ where: { userId: id } });
 };
 
 export const deleteUser = async (email: string) => {
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
-
+  //
   const verifyEmail = {
     to: email,
     subject: "Confirm account delete",
-    html: `<a href="${BASE_URL}/api/auth/delete-confirm?token=${token}" target="_blank">Confirm account delete</a>`,
+    html: `<a href="${BASE_URL}/api/auth/delete?token=${token}" target="_blank">Confirm account delete</a>`,
   };
 
   await sendEmail(verifyEmail);
@@ -149,14 +137,19 @@ export const updateUserPassword = async (userId: number, password: string) => {
   const passwordHash = hashPassword(password);
   const user = await User.findOne({
     where: { id: userId },
-    include: { model: Session, as: "sessions" },
+    include: { model: Session, as: "session" },
   });
   if (!user) throw new HttpError(404, "User not found");
+
+  if (await comparePassword(password, String(user.get("password"))))
+    throw new HttpError(401, "Old and new passwords must not match");
+
   user?.update({ password: passwordHash });
-  const { id, email, fullname, username, sessions } = user?.toJSON();
+  const { id, email, fullname, username } = user?.toJSON();
+  const session: any = user.get("session");
 
   const { accessToken, refreshToken } = createTokens({ email });
-  sessions.update({ accessToken, refreshToken });
+  session.update({ accessToken, refreshToken });
 
   return {
     user: {
@@ -170,7 +163,7 @@ export const updateUserPassword = async (userId: number, password: string) => {
   };
 };
 
-export const resetUserPassword = async (email: string) => {
+export const resetUserPassword = async (email: any) => {
   const user = await User.findOne({
     where: { email },
   });
@@ -180,13 +173,13 @@ export const resetUserPassword = async (email: string) => {
 
   const verifyEmail = {
     to: email,
-    subject: "Verify email",
-    html: `<a href="${BASE_URL}/api/auth/reset-password?token=${token}" target="_blank">Confirm reset password</a>`,
+    subject: "Confirm reset password",
+    html: `<a href="${FRONTEND_BASE_URL}/api/auth/reset-password?token=${token}" target="_blank">Confirm reset password</a>`,
   };
   await sendEmail(verifyEmail);
 };
 
-export const confirmResetPassword = async (token: any, password: string) => {
+export const confirmResetPassword = async (token: any, newPassword: string) => {
   const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
   let email: string;
   if (typeof decoded === "object" && "email" in decoded) {
@@ -198,26 +191,25 @@ export const confirmResetPassword = async (token: any, password: string) => {
     where: {
       email,
     },
-    include: { model: Session, as: "sessions" },
+    include: { model: Session, as: "session" },
   });
   if (!user) {
     throw new HttpError(404, "User not found");
   }
 
-  const passwordHash = hashPassword(password);
+  if (await comparePassword(newPassword, String(user.get("password"))))
+    throw new HttpError(401, "Old and new passwords must not match");
+
+  const passwordHash = await hashPassword(newPassword);
   await user.update({ password: passwordHash });
 
-  const { id, fullname, username, sessions } = user?.toJSON();
+  const { id, fullname, username } = user?.toJSON();
+  const session: any = user.get("session");
   const { accessToken, refreshToken } = createTokens({ email });
-  sessions.update({ accessToken, refreshToken });
+  session.update({ accessToken, refreshToken });
 
   return {
-    user: {
-      id,
-      email,
-      fullname,
-      username,
-    },
+    user: { id, email, fullname, username },
     accessToken,
     refreshToken,
   };

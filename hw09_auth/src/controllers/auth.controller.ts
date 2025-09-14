@@ -10,7 +10,7 @@ import {
   confirmDeleteUser,
   updateUserPassword,
   resetUserPassword,
-  confirmResetPassword
+  confirmResetPassword,
 } from "../services/auth.service";
 
 const {
@@ -19,17 +19,20 @@ const {
 } = process.env;
 
 export const signupController = async (req: Request, res: Response) => {
-  await signupUser(req.body);
-  res.status(201).json({ message: "Signup successfully, confirm email" });
+  const email = await signupUser(req.body);
+  res.status(201).json({
+    message: `Signup successfully, a message containing a confirmation link has been sent to email: ${email}`,
+  });
 };
 
 export const emailConfirmController = async (req: Request, res: Response) => {
-  const user = await confirmEmail(req.query.token);
-  res.status(200).json({ message: "Email successfully confirmed", user });
+  await confirmEmail(req.query.token);
+  res.status(200).json({ message: "Email successfully confirmed" });
 };
 
 export const loginController = async (req: Request, res: Response) => {
-  const { user, accessToken, refreshToken } = await loginUser(req.body);
+  const { email, password } = req.body;
+  const { user, accessToken, refreshToken } = await loginUser(email, password);
 
   res
     .cookie("accessToken", accessToken, {
@@ -62,7 +65,7 @@ export const refreshController = async (req: Request, res: Response) => {
 };
 
 export const logoutController = async (req: Request, res: Response) => {
-  await logoutUser(req.user);
+  await logoutUser(req.user.id);
   res
     .clearCookie("accessToken")
     .clearCookie("refreshToken")
@@ -76,12 +79,14 @@ export const deleteController = async (req: Request, res: Response) => {
     .clearCookie("accessToken")
     .clearCookie("refreshToken")
     .status(200)
-    .json({ message: "Confirm delete account on email" });
+    .json({
+      message: `Confirm account delete, a message containing a confirmation link has been sent to email: ${req.user.email}`,
+    });
 };
 
 export const confirmDeleteController = async (req: Request, res: Response) => {
   await confirmDeleteUser(req.query.token);
-  res.status(204).json({ message: "Account successfully deleted" });
+  res.status(200).json({ message: "Account successfully deleted" });
 };
 
 export const updatePasswordController = async (req: Request, res: Response) => {
@@ -103,18 +108,33 @@ export const updatePasswordController = async (req: Request, res: Response) => {
 };
 
 export const resetPasswordController = async (req: Request, res: Response) => {
-  await resetUserPassword(req.body.email);
+  await resetUserPassword(req.query.email);
   res
     .status(201)
     .clearCookie("accessToken")
     .clearCookie("refreshToken")
-    .json({ message: "Confirm reset password on email" });
+    .json({
+      message: `Confirm reset password, a message containing a confirmation link has been sent to email: ${req.query.email}`,
+    });
 };
 
 export const confirmResetPasswordController = async (
   req: Request,
   res: Response
 ) => {
-  const user = await confirmResetPassword(req.query.token, req.body.email);
-  res.status(201).json({ message: "Password successfully updated", user });
+  const { user, accessToken, refreshToken } = await confirmResetPassword(
+    req.query.token,
+    req.body.password
+  );
+  res
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      maxAge: Number(ACCESS_TOKEN_MAX_AGE_MS),
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: Number(REFRESH_TOKEN_MAX_AGE_MS),
+    })
+    .status(201)
+    .json({ message: "Password successfully updated", user });
 };

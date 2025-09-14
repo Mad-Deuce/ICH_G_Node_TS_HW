@@ -1,7 +1,11 @@
 import { Router } from "express";
 
 import validateBody from "../decorators/validateBody";
-import { signupSchema, loginSchema } from "../validation/schemas/auth.schemas";
+import {
+  signupSchema,
+  loginSchema,
+  passwordSchema,
+} from "../validation/schemas/auth.schemas";
 import authenticate from "../middlewares/authenticate";
 
 import {
@@ -14,7 +18,7 @@ import {
   confirmDeleteController,
   updatePasswordController,
   resetPasswordController,
-  confirmResetPasswordController
+  confirmResetPasswordController,
 } from "../controllers/auth.controller";
 
 const authRouter = Router();
@@ -29,9 +33,18 @@ authRouter.get("/logout", authenticate, logoutController);
 authRouter.delete("/delete", authenticate, deleteController);
 authRouter.get("/delete", confirmDeleteController);
 
-authRouter.put("/update-password", authenticate, updatePasswordController);
+authRouter.put(
+  "/update-password",
+  authenticate,
+  validateBody(passwordSchema),
+  updatePasswordController
+);
 
-authRouter.put("/reset-password", resetPasswordController);
-authRouter.get("/reset-password", confirmResetPasswordController);
+authRouter.get("/reset-password", resetPasswordController);
+authRouter.post(
+  "/reset-password",
+  validateBody(passwordSchema),
+  confirmResetPasswordController
+);
 
 export default authRouter;

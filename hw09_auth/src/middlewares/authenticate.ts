@@ -6,6 +6,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: any;
+      warning?: string;
     }
   }
 }
@@ -28,7 +29,8 @@ const authenticate = async (req: Request, res: Response, next: any) => {
   });
   if (!session) throw new HttpError(401, "session not found");
   const { user } = session.toJSON();
-  if (!user.mustChangePassword) throw new HttpError(403, "Password update required");
+  if (user.mustChangePassword) req.warning = "Password update required";
+
   req.user = user;
   next();
 };
