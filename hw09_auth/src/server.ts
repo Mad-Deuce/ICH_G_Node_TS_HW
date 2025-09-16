@@ -4,11 +4,12 @@ import cookieParser from "cookie-parser";
 
 import notFoundHandler from "./middlewares/notFoundHandler";
 import errorHandler from "./middlewares/errorHandler";
+import authenticate from "./middlewares/authenticate";
 
 import authRouter from "./routers/auth.router";
 import usersRouter from "./routers/users.router";
 import adminRouter from "./routers/admin.router";
-import authenticate from "./middlewares/authenticate";
+import checkRole from "./decorators/checkRole";
 
 const startServer = () => {
   const app = express();
@@ -18,7 +19,7 @@ const startServer = () => {
 
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);
-  app.use("/api/admin", authenticate, adminRouter);
+  app.use("/api/admin", authenticate, checkRole(["admin"]), adminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
