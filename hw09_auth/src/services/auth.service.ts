@@ -5,8 +5,11 @@ import sendEmail from "../utils/sendEmail";
 import { hashPassword, comparePassword } from "../utils/hashPassword";
 import createTokens from "../utils/createTokens";
 
+
+
 import User from "../db/models/User";
 import Session from "../db/models/Session";
+import Role from "../db/models/Role";
 
 const { BASE_URL, FRONTEND_BASE_URL, JWT_SECRET = "secret" } = process.env;
 
@@ -14,7 +17,14 @@ export const signupUser = async (payload: any) => {
   const { password, email } = payload;
   const passwordHash = await hashPassword(password);
 
-  const user = await User.create({ ...payload, password: passwordHash });
+  const role = await Role.findOne({ where: { name: "user" } });
+  if (!role) throw new HttpError(500, "Role 'user' not found");
+
+  await User.create({
+    ...payload,
+    roleId: role.get("id"),
+    password: passwordHash,
+  });
 
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
 
@@ -30,22 +40,26 @@ export const signupUser = async (payload: any) => {
 };
 
 export const confirmEmail = async (token: any) => {
-  const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-  let email: string;
-  if (typeof decoded === "object" && "email" in decoded) {
-    email = decoded.email;
-  } else {
-    throw new HttpError(401, "Invalid token payload");
+  try {
+    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+    let email: string;
+    if (typeof decoded === "object" && "email" in decoded) {
+      email = decoded.email;
+    } else {
+      throw new HttpError(401, "Invalid token payload");
+    }
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+    await user.update({ verified: true });
+  } catch (error: any) {
+    throw new HttpError(401, error.message);
   }
-  const user = await User.findOne({
-    where: {
-      email,
-    },
-  });
-  if (!user) {
-    throw new HttpError(404, "User not found");
-  }
-  await user.update({ verified: true });
 };
 
 export const loginUser = async (email: string, loginPassword: string) => {
@@ -74,28 +88,33 @@ export const loginUser = async (email: string, loginPassword: string) => {
 export const refreshTokens = async (
   currentRefreshToken: string | undefined
 ) => {
-  if (!currentRefreshToken) throw new HttpError(401, "RefreshToken not found");
-  jwt.verify(currentRefreshToken, JWT_SECRET);
+  try {
+    if (!currentRefreshToken)
+      throw new HttpError(401, "RefreshToken not found");
+    jwt.verify(currentRefreshToken, JWT_SECRET);
 
-  const session = await Session.findOne({
-    where: { refreshToken: currentRefreshToken },
-    include: { model: User, as: "user" },
-  });
-  if (!session) throw new HttpError(401, "Session not found");
+    const session = await Session.findOne({
+      where: { refreshToken: currentRefreshToken },
+      include: { model: User, as: "user" },
+    });
+    if (!session) throw new HttpError(401, "Session not found");
 
-  const { user } = session.toJSON();
-  if (!user) throw new HttpError(401, "User not found");
-  const { id, email, fullname, username } = user;
+    const { user } = session.toJSON();
+    if (!user) throw new HttpError(401, "User not found");
+    const { id, email, fullname, username } = user;
 
-  const { accessToken, refreshToken } = createTokens({ email });
+    const { accessToken, refreshToken } = createTokens({ email });
 
-  await session.update({ accessToken, refreshToken });
+    await session.update({ accessToken, refreshToken });
 
-  return {
-    user: { id, email, fullname, username },
-    accessToken,
-    refreshToken,
-  };
+    return {
+      user: { id, email, fullname, username },
+      accessToken,
+      refreshToken,
+    };
+  } catch (error: any) {
+    throw new HttpError(401, error.message);
+  }
 };
 
 export const logoutUser = async (id: number) => {
@@ -115,22 +134,26 @@ export const deleteUser = async (email: string) => {
 };
 
 export const confirmDeleteUser = async (token: any) => {
-  const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-  let email: string;
-  if (typeof decoded === "object" && "email" in decoded) {
-    email = decoded.email;
-  } else {
-    throw new HttpError(401, "Invalid token payload");
+  try {
+    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+    let email: string;
+    if (typeof decoded === "object" && "email" in decoded) {
+      email = decoded.email;
+    } else {
+      throw new HttpError(401, "Invalid token payload");
+    }
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+    await user.destroy();
+  } catch (error: any) {
+    throw new HttpError(401, error.message);
   }
-  const user = await User.findOne({
-    where: {
-      email,
-    },
-  });
-  if (!user) {
-    throw new HttpError(404, "User not found");
-  }
-  await user.destroy();
 };
 
 export const updateUserPassword = async (userId: number, password: string) => {
@@ -180,37 +203,41 @@ export const resetUserPassword = async (email: any) => {
 };
 
 export const confirmResetPassword = async (token: any, newPassword: string) => {
-  const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-  let email: string;
-  if (typeof decoded === "object" && "email" in decoded) {
-    email = decoded.email;
-  } else {
-    throw new HttpError(401, "Invalid token payload");
+  try {
+    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
+    let email: string;
+    if (typeof decoded === "object" && "email" in decoded) {
+      email = decoded.email;
+    } else {
+      throw new HttpError(401, "Invalid token payload");
+    }
+    const user = await User.findOne({
+      where: {
+        email,
+      },
+      include: { model: Session, as: "session" },
+    });
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    if (await comparePassword(newPassword, String(user.get("password"))))
+      throw new HttpError(401, "Old and new passwords must not match");
+
+    const passwordHash = await hashPassword(newPassword);
+    await user.update({ password: passwordHash });
+
+    const { id, fullname, username } = user?.toJSON();
+    const session: any = user.get("session");
+    const { accessToken, refreshToken } = createTokens({ email });
+    session.update({ accessToken, refreshToken });
+
+    return {
+      user: { id, email, fullname, username },
+      accessToken,
+      refreshToken,
+    };
+  } catch (error: any) {
+    throw new HttpError(401, error.message);
   }
-  const user = await User.findOne({
-    where: {
-      email,
-    },
-    include: { model: Session, as: "session" },
-  });
-  if (!user) {
-    throw new HttpError(404, "User not found");
-  }
-
-  if (await comparePassword(newPassword, String(user.get("password"))))
-    throw new HttpError(401, "Old and new passwords must not match");
-
-  const passwordHash = await hashPassword(newPassword);
-  await user.update({ password: passwordHash });
-
-  const { id, fullname, username } = user?.toJSON();
-  const session: any = user.get("session");
-  const { accessToken, refreshToken } = createTokens({ email });
-  session.update({ accessToken, refreshToken });
-
-  return {
-    user: { id, email, fullname, username },
-    accessToken,
-    refreshToken,
-  };
 };

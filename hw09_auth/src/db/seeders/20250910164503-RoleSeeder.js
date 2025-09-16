@@ -1,6 +1,11 @@
 
 export async function up(queryInterface, Sequelize) {
   await queryInterface.bulkInsert('roles', [{
+    name: 'super',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }], {});
+  await queryInterface.bulkInsert('roles', [{
     name: 'admin',
     createdAt: new Date(),
     updatedAt: new Date()

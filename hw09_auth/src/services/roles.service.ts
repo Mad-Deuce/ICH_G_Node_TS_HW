@@ -6,3 +6,5 @@ export const getAllRoles = async () => {
     include: { model: User, as: "users" },
   });
 };
+
+
