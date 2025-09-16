@@ -14,9 +14,6 @@ import {
   loginController,
   refreshController,
   logoutController,
-  deleteController,
-  confirmDeleteController,
-  updatePasswordController,
   resetPasswordController,
   confirmResetPasswordController,
 } from "../controllers/auth.controller";
@@ -29,16 +26,6 @@ authRouter.get("/signup", emailConfirmController);
 authRouter.post("/login", validateBody(loginSchema), loginController);
 authRouter.get("/refresh", refreshController);
 authRouter.get("/logout", authenticate, logoutController);
-
-authRouter.delete("/delete", authenticate, deleteController);
-authRouter.get("/delete", confirmDeleteController);
-
-authRouter.put(
-  "/update-password",
-  authenticate,
-  validateBody(passwordSchema),
-  updatePasswordController
-);
 
 authRouter.get("/reset-password", resetPasswordController);
 authRouter.post(

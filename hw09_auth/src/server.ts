@@ -7,8 +7,8 @@ import errorHandler from "./middlewares/errorHandler";
 
 import authRouter from "./routers/auth.router";
 import usersRouter from "./routers/users.router";
-import rolesRouter from "./routers/roles.router";
-import sessionsRouter from "./routers/sessions.router";
+import adminRouter from "./routers/admin.router";
+import authenticate from "./middlewares/authenticate";
 
 const startServer = () => {
   const app = express();
@@ -18,8 +18,7 @@ const startServer = () => {
 
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);
-  app.use("/api/roles", rolesRouter);
-  app.use("/api/sessions", sessionsRouter);
+  app.use("/api/admin", authenticate, adminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
-// Extend Express Request interface to include 'user'
+// Extend Express Request interface to include 'auth'
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
-      warning?: string;
+      auth: { [key: string]: any };
     }
   }
 }
@@ -19,20 +18,27 @@ import User from "../db/models/User";
 const { JWT_SECRET = "secret" } = process.env;
 
 const authenticate = async (req: Request, res: Response, next: any) => {
-  const { accessToken } = req.cookies;
-  if (!accessToken) throw new HttpError(401, "accessToken not found");
-  jwt.verify(accessToken, JWT_SECRET);
+  try {
+    const { accessToken } = req.cookies;
+    if (!accessToken) throw new HttpError(401, "AccessToken not found");
+    jwt.verify(accessToken, JWT_SECRET);
 
-  const session = await Session.findOne({
-    where: { accessToken: accessToken },
-    include: { model: User, as: "user" },
-  });
-  if (!session) throw new HttpError(401, "session not found");
-  const { user } = session.toJSON();
-  if (user.mustChangePassword) req.warning = "Password update required";
+    const session = await Session.findOne({
+      where: { accessToken: accessToken },
+      include: { model: User, as: "user" },
+    });
+    if (!session) throw new HttpError(401, "Session not found");
+    const { user } = session.toJSON();
+    if (!user) throw new HttpError(401, "User not found");
 
-  req.user = user;
-  next();
+    if (!req.auth) req.auth = {};
+    req.auth.user = user;
+    req.auth.session = session.toJSON();
+
+    next();
+  } catch (error) {
+    throw new HttpError(401, "Invalid token payload");
+  }
 };
 
 export default authenticate;

@@ -25,3 +25,10 @@ export const passwordSchema = Joi.object({
     .min(5)
     .required(),
 });
+
+export const updateSchema = Joi.object({
+  email: Joi.string().trim().pattern(emailPattern.value).min(5),
+  password: Joi.string().trim().pattern(passwordPattern.value).min(5),
+  fullname: Joi.string().trim(),
+  username: Joi.string().trim(),
+});
