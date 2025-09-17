@@ -8,6 +8,7 @@ import createTokens from "../utils/createTokens";
 import User from "../db/models/User";
 import Session from "../db/models/Session";
 import Role from "../db/models/Role";
+import { Model } from "sequelize";
 
 const { BASE_URL, FRONTEND_BASE_URL, JWT_SECRET = "secret" } = process.env;
 
@@ -37,27 +38,12 @@ export const signupUser = async (payload: any) => {
   return email;
 };
 
-export const confirmEmail = async (token: any) => {
-  try {
-    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-    let email: string;
-    if (typeof decoded === "object" && "email" in decoded) {
-      email = decoded.email;
-    } else {
-      throw new HttpError(401, "Invalid token payload");
-    }
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    });
-    if (!user) {
-      throw new HttpError(404, "User not found");
-    }
-    await user.update({ verified: true });
-  } catch (error: any) {
-    throw new HttpError(401, error.message);
+export const confirmEmail = async (userId: number) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new HttpError(404, "User not found");
   }
+  await user.update({ verified: true });
 };
 
 export const loginUser = async (email: string, loginPassword: string) => {
@@ -135,42 +121,14 @@ export const resetUserPassword = async (email: any) => {
   await sendEmail(verifyEmail);
 };
 
-export const confirmResetPassword = async (token: any, newPassword: string) => {
-  try {
-    const decoded: string | JwtPayload = jwt.verify(token, JWT_SECRET);
-    let email: string;
-    if (typeof decoded === "object" && "email" in decoded) {
-      email = decoded.email;
-    } else {
-      throw new HttpError(401, "Invalid token payload");
-    }
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-      include: { model: Session, as: "session" },
-    });
-    if (!user) {
-      throw new HttpError(404, "User not found");
-    }
+export const confirmResetPassword = async (
+  user: Model,
+  newPassword: string
+) => {
+  if (await comparePassword(newPassword, String(user.get("password"))))
+    throw new HttpError(401, "Old and new passwords must not match");
 
-    if (await comparePassword(newPassword, String(user.get("password"))))
-      throw new HttpError(401, "Old and new passwords must not match");
-
-    const passwordHash = await hashPassword(newPassword);
-    await user.update({ password: passwordHash });
-
-    const { id, fullname, username } = user?.toJSON();
-    const session: any = user.get("session");
-    const { accessToken, refreshToken } = createTokens({ email });
-    session.update({ accessToken, refreshToken });
-
-    return {
-      user: { id, email, fullname, username },
-      accessToken,
-      refreshToken,
-    };
-  } catch (error: any) {
-    throw new HttpError(401, error.message);
-  }
+  const passwordHash = await hashPassword(newPassword);
+  await user.update({ password: passwordHash });
+  await Session.destroy({ where: { userId: user.get("id") } });
 };

@@ -5,7 +5,6 @@ import {
   getAllUsers,
   deleteUserByEmail,
   confirmDeleteUser,
-  updateUserPassword,
   updateUserPublicData,
 } from "../services/users.service";
 
@@ -27,14 +26,7 @@ export const confirmDeleteController = async (req: Request, res: Response) => {
   res.json({ message: "Account successfully deleted" });
 };
 
-export const updatePasswordController = async (req: Request, res: Response) => {
-  const { user, accessToken, refreshToken } = await updateUserPassword(
-    req.auth.user.id,
-    req.body.password
-  );
-  setAuthCookies(res, accessToken, refreshToken);
-  res.json({ message: "Password successfully updated", user });
-};
+
 
 export const updateUserPublicDataController = async (
   req: Request,

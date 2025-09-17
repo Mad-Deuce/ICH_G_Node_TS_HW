@@ -12,13 +12,6 @@ import {
   confirmResetPassword,
 } from "../services/auth.service";
 
-import {
-  deleteUserByEmail,
-  confirmDeleteUser,
-  updateUserPassword,
-  updateUserPublicData,
-} from "../services/users.service";
-
 export const signupController = async (req: Request, res: Response) => {
   const email = await signupUser(req.body);
   res.status(201).json({
@@ -27,8 +20,8 @@ export const signupController = async (req: Request, res: Response) => {
 };
 
 export const emailConfirmController = async (req: Request, res: Response) => {
-  await confirmEmail(req.query.token);
-  res.json({ message: "Email successfully confirmed" });
+  await confirmEmail(req.auth.user.id);
+  res.json({ message: "Email successfully confirmed, redirect to Login Page" });
 };
 
 export const loginController = async (req: Request, res: Response) => {
@@ -49,7 +42,7 @@ export const refreshController = async (req: Request, res: Response) => {
 export const logoutController = async (req: Request, res: Response) => {
   await logoutUser(req.auth.user.id);
   clearAuthCookies(res);
-  res.json({ message: "Logout successfully" });
+  res.json({ message: "Logout successfully, redirect to Login Page" });
 };
 
 export const resetPasswordController = async (req: Request, res: Response) => {
@@ -64,10 +57,9 @@ export const confirmResetPasswordController = async (
   req: Request,
   res: Response
 ) => {
-  const { user, accessToken, refreshToken } = await confirmResetPassword(
-    req.query.token,
-    req.body.password
-  );
-  setAuthCookies(res, accessToken, refreshToken);
-  res.json({ message: "Password successfully updated", user });
+  await confirmResetPassword(req.auth.user, req.body.password);
+  clearAuthCookies(res);
+  res.json({
+    message: "Password successfully updated, redirect to Login Page",
+  });
 };

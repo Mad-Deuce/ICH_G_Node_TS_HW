@@ -11,9 +11,6 @@ import Role from "../db/models/Role";
 
 const { BASE_URL, FRONTEND_BASE_URL, JWT_SECRET = "secret" } = process.env;
 
-
-
-
 export const getAllUsers = async () => {
   return await User.findAll({
     include: [
@@ -58,48 +55,24 @@ export const confirmDeleteUser = async (token: any) => {
   }
 };
 
-export const updateUserPassword = async (userId: number, password: string) => {
-  const passwordHash = await hashPassword(password);
-  const user = await User.findOne({
-    where: { id: userId },
-    include: { model: Session, as: "session" },
-  });
-  if (!user) throw new HttpError(404, "User not found");
-
-  if (await comparePassword(password, String(user.get("password"))))
-    throw new HttpError(401, "Old and new passwords must not match");
-
-  user?.update({ password: passwordHash });
-  const { id, email, fullname, username } = user?.toJSON();
-  const session: any = user.get("session");
-
-  const { accessToken, refreshToken } = createTokens({ email });
-  session.update({ accessToken, refreshToken });
-
-  return {
-    user: {
-      id,
-      email,
-      fullname,
-      username,
-    },
-    accessToken,
-    refreshToken,
-  };
-};
-
 export const updateUserPublicData = async (
   userId: number,
   newUserData: any
 ) => {
+  if (newUserData.password) {
+    newUserData.password = await hashPassword(newUserData.password);
+  }
+  const passwordHash = await hashPassword(newUserData.password);
   const user = await User.findOne({
     where: { id: userId },
     include: { model: Session, as: "session" },
   });
   if (!user) throw new HttpError(404, "User not found");
 
+  if (await comparePassword(newUserData.password, String(user.get("password"))))
+    throw new HttpError(401, "Old and new passwords must not match");
+
   delete newUserData.email;
-  delete newUserData.password;
   delete newUserData.roleId;
   await user.update({ ...newUserData });
 
