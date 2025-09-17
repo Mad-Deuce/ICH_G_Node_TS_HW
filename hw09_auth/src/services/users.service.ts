@@ -20,7 +20,7 @@ export const getAllUsers = async () => {
   });
 };
 
-export const deleteUserByEmail = async (email: string) => {
+export const deleteUser = async (email: string) => {
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
   //
   const verifyEmail = {

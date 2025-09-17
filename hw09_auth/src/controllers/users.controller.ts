@@ -3,7 +3,7 @@ import { setAuthCookies, clearAuthCookies } from "../utils/setupAuthCookies";
 
 import {
   getAllUsers,
-  deleteUserByEmail,
+  deleteUser,
   confirmDeleteUser,
   updateUserPublicData,
 } from "../services/users.service";
@@ -14,7 +14,7 @@ export const getUsersController = async (req: Request, res: Response) => {
 };
 
 export const deleteController = async (req: Request, res: Response) => {
-  await deleteUserByEmail(req.auth.user.email);
+  await deleteUser(req.auth.user.email);
   clearAuthCookies(res);
   res.json({
     message: `Confirm account delete, a message containing a confirmation link has been sent to email: ${req.auth.user.email}`,
@@ -25,8 +25,6 @@ export const confirmDeleteController = async (req: Request, res: Response) => {
   await confirmDeleteUser(req.query.token);
   res.json({ message: "Account successfully deleted" });
 };
-
-
 
 export const updateUserPublicDataController = async (
   req: Request,

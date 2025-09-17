@@ -1,4 +1,7 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import { Model } from "sequelize";
+
+import sequelize from "../db/sequelize";
 
 import HttpError from "../utils/HttpError";
 import sendEmail from "../utils/sendEmail";
@@ -8,38 +11,45 @@ import createTokens from "../utils/createTokens";
 import User from "../db/models/User";
 import Session from "../db/models/Session";
 import Role from "../db/models/Role";
-import { Model } from "sequelize";
 
 const { BASE_URL, FRONTEND_BASE_URL, JWT_SECRET = "secret" } = process.env;
 
 export const signupUser = async (payload: any) => {
-  const { password, email } = payload;
-  const passwordHash = await hashPassword(password);
+  const transaction = await sequelize.transaction();
+  try {
+    const { password, email } = payload;
+    const passwordHash = await hashPassword(password);
 
-  const role = await Role.findOne({ where: { name: "user" } });
-  if (!role) throw new HttpError(500, "Role 'user' not found");
+    const role = await Role.findOne({ where: { name: "user" } });
+    if (!role) throw new HttpError(500, "Role 'user' not found");
 
-  await User.create({
-    ...payload,
-    roleId: role.get("id"),
-    password: passwordHash,
-  });
+    await User.create(
+      {
+        ...payload,
+        roleId: role.get("id"),
+        password: passwordHash,
+      },
+      { transaction }
+    );
 
-  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+    const { confirmationToken } = createTokens({ email });
 
-  const verifyEmail = {
-    to: email,
-    subject: "Verify email",
-    html: `<a href="${BASE_URL}/api/auth/signup?token=${token}" target="_blank">Confirm email</a>`,
-  };
+    const verifyEmail = {
+      to: email,
+      subject: "Verify email",
+      html: `<a href="${BASE_URL}/api/auth/signup?token=${confirmationToken}" target="_blank">Confirm email</a>`,
+    };
 
-  await sendEmail(verifyEmail);
+    await sendEmail(verifyEmail);
 
-  return email;
+    return email;
+  } catch (error: any) {
+    await transaction.rollback();
+    throw new HttpError(500, error.message);
+  }
 };
 
-export const confirmEmail = async (userId: number) => {
-  const user = await User.findByPk(userId);
+export const confirmEmail = async (user: Model) => {
   if (!user) {
     throw new HttpError(404, "User not found");
   }
@@ -111,12 +121,12 @@ export const resetUserPassword = async (email: any) => {
   });
   if (!user) throw new HttpError(404, "User not found");
 
-  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+  const { confirmationToken } = createTokens({ email });
 
   const verifyEmail = {
     to: email,
     subject: "Confirm reset password",
-    html: `<a href="${FRONTEND_BASE_URL}/api/auth/reset-password?token=${token}" target="_blank">Confirm reset password</a>`,
+    html: `<a href="${FRONTEND_BASE_URL}/api/auth/reset-password?token=${confirmationToken}" target="_blank">Confirm reset password</a>`,
   };
   await sendEmail(verifyEmail);
 };

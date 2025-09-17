@@ -20,7 +20,7 @@ export const signupController = async (req: Request, res: Response) => {
 };
 
 export const emailConfirmController = async (req: Request, res: Response) => {
-  await confirmEmail(req.auth.user.id);
+  await confirmEmail(req.auth.user);
   res.json({ message: "Email successfully confirmed, redirect to Login Page" });
 };
 

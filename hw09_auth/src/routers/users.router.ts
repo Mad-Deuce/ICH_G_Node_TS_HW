@@ -1,6 +1,8 @@
 import { Router } from "express";
 
 import authenticate from "../middlewares/authenticate";
+import checkConfirmationByEmail from "../middlewares/checkConfirmationByEmail";
+
 import validateBody from "../decorators/validateBody";
 import {
   updateSchema,
@@ -15,7 +17,7 @@ import {
 const usersRouter = Router();
 
 usersRouter.delete("/delete", authenticate, deleteController);
-usersRouter.get("/delete", confirmDeleteController);
+usersRouter.get("/delete", checkConfirmationByEmail, confirmDeleteController);
 
 usersRouter.put(
   "/",
