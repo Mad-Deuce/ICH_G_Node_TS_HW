@@ -4,14 +4,14 @@ import authenticate from "../middlewares/authenticate";
 import checkConfirmationByEmail from "../middlewares/checkConfirmationByEmail";
 
 import validateBody from "../decorators/validateBody";
-import {
-  updateSchema,
-} from "../validation/schemas/auth.schemas";
+import { updateSchema } from "../validation/schemas/auth.schemas";
+import { emailSchema } from "../validation/schemas/user.schemas";
 
 import {
   deleteController,
   confirmDeleteController,
-  updateUserPublicDataController,
+  updatePublicDataController,
+  updateEmailController,
 } from "../controllers/users.controller";
 
 const usersRouter = Router();
@@ -23,14 +23,21 @@ usersRouter.put(
   "/",
   authenticate,
   validateBody(updateSchema),
-  updateUserPublicDataController
+  updatePublicDataController
 );
 
 usersRouter.put(
   "/email",
   authenticate,
-  validateBody(updateSchema),
-  updateUserPublicDataController
+  validateBody(emailSchema),
+  updateEmailController
+);
+
+usersRouter.get(
+  "/email",
+  authenticate,
+  validateBody(emailSchema),
+  updateEmailController
 );
 
 export default usersRouter;

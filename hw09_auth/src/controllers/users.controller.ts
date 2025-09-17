@@ -5,7 +5,10 @@ import {
   getAllUsers,
   deleteUser,
   confirmDeleteUser,
-  updateUserPublicData,
+  updatePublicData,
+  changeEmail,
+  confirmChangeEmail,
+  confirmNewEmail
 } from "../services/users.service";
 
 export const getUsersController = async (req: Request, res: Response) => {
@@ -26,14 +29,41 @@ export const confirmDeleteController = async (req: Request, res: Response) => {
   res.json({ message: "Account successfully deleted" });
 };
 
-export const updateUserPublicDataController = async (
+export const updatePublicDataController = async (
   req: Request,
   res: Response
 ) => {
-  const { user, accessToken, refreshToken } = await updateUserPublicData(
-    req.auth.user.id,
+  const { user, accessToken, refreshToken } = await updatePublicData(
+    req.auth.user,
     req.body
   );
   setAuthCookies(res, accessToken, refreshToken);
   res.json({ message: "User data successfully updated", user });
+};
+
+export const updateEmailController = async (req: Request, res: Response) => {
+  changeEmail(req.auth.user, req.body.email);
+  clearAuthCookies(res);
+  res.json({
+    message: `Confirm email change, a message containing a confirmation link has been sent to email: ${req.auth.user.email}`,
+  });
+};
+
+export const confirmUpdateEmailController = async (
+  req: Request,
+  res: Response
+) => {
+  confirmChangeEmail(req.auth.user, req.params.new_email);
+  clearAuthCookies(res);
+  res.json({
+    message: `Confirm new email change, a message containing a confirmation link has been sent to email: ${req.params.email}`,
+  });
+};
+
+export const saveNewEmailController = async (req: Request, res: Response) => {
+  confirmNewEmail(req.auth.user, req.params.new_email);
+  clearAuthCookies(res);
+  res.json({
+    message: `Email has been updated`,
+  });
 };

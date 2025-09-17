@@ -1,4 +1,5 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { Model } from "sequelize";
 
 import HttpError from "../utils/HttpError";
 import sendEmail from "../utils/sendEmail";
@@ -22,7 +23,7 @@ export const getAllUsers = async () => {
 
 export const deleteUser = async (email: string) => {
   const { confirmationToken } = createTokens({ email });
-  
+
   const verifyEmail = {
     to: email,
     subject: "Confirm account delete",
@@ -55,18 +56,10 @@ export const confirmDeleteUser = async (token: any) => {
   }
 };
 
-export const updateUserPublicData = async (
-  userId: number,
-  newUserData: any
-) => {
+export const updatePublicData = async (user: Model, newUserData: any) => {
   if (newUserData.password) {
     newUserData.password = await hashPassword(newUserData.password);
   }
-  const passwordHash = await hashPassword(newUserData.password);
-  const user = await User.findOne({
-    where: { id: userId },
-    include: { model: Session, as: "session" },
-  });
   if (!user) throw new HttpError(404, "User not found");
 
   if (await comparePassword(newUserData.password, String(user.get("password"))))
@@ -92,4 +85,43 @@ export const updateUserPublicData = async (
     accessToken,
     refreshToken,
   };
+};
+
+export const changeEmail = async (user: any, newEmail: string) => {
+  const { email } = user;
+  const { confirmationToken } = createTokens({ email });
+
+  const verifyEmail = {
+    to: email,
+    subject: "Confirm email change",
+    html: `<a href="${BASE_URL}/api/users/email?token=${confirmationToken}&new_email=${newEmail}" target="_blank">Confirm email change to ${newEmail}</a>`,
+  };
+
+  await sendEmail(verifyEmail);
+};
+
+export const confirmChangeEmail = async (
+  user: any,
+  newEmail: string | undefined
+) => {
+  if (!newEmail) throw new HttpError(400, "New email not found");
+
+  const { email } = user;
+  const { confirmationToken } = createTokens({ email });
+
+  const verifyNewEmail = {
+    to: newEmail,
+    subject: "Confirm new email",
+    html: `<a href="${BASE_URL}/api/users/new-email?token=${confirmationToken}&new_email=${newEmail}" target="_blank">Confirm new email</a>`,
+  };
+
+  await sendEmail(verifyNewEmail);
+};
+
+export const confirmNewEmail = async (
+  user: any,
+  newEmail: string | undefined
+) => {
+  if (!newEmail) throw new HttpError(400, "New email not found");
+  await user.update({ email: newEmail });
 };
