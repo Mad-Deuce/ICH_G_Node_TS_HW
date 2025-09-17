@@ -41,7 +41,7 @@ export const signupUser = async (payload: any) => {
     };
 
     await sendEmail(verifyEmail);
-
+    await transaction.commit();
     return email;
   } catch (error: any) {
     await transaction.rollback();

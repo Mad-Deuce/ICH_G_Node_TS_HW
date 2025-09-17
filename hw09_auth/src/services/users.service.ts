@@ -21,12 +21,12 @@ export const getAllUsers = async () => {
 };
 
 export const deleteUser = async (email: string) => {
-  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
-  //
+  const { confirmationToken } = createTokens({ email });
+  
   const verifyEmail = {
     to: email,
     subject: "Confirm account delete",
-    html: `<a href="${BASE_URL}/api/auth/delete?token=${token}" target="_blank">Confirm account delete</a>`,
+    html: `<a href="${BASE_URL}/api/users/delete?token=${confirmationToken}" target="_blank">Confirm account delete</a>`,
   };
 
   await sendEmail(verifyEmail);
