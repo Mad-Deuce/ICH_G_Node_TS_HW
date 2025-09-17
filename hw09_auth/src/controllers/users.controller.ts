@@ -53,15 +53,15 @@ export const confirmUpdateEmailController = async (
   req: Request,
   res: Response
 ) => {
-  confirmChangeEmail(req.auth.user, req.params.new_email);
+  confirmChangeEmail(req.auth.user, req.query.new_email);
   clearAuthCookies(res);
   res.json({
-    message: `Confirm new email change, a message containing a confirmation link has been sent to email: ${req.params.email}`,
+    message: `Confirm new email, a message containing a confirmation link has been sent to email: ${req.query.new_email}`,
   });
 };
 
 export const saveNewEmailController = async (req: Request, res: Response) => {
-  confirmNewEmail(req.auth.user, req.params.new_email);
+  confirmNewEmail(req.auth.user, req.query.new_email);
   clearAuthCookies(res);
   res.json({
     message: `Email has been updated`,

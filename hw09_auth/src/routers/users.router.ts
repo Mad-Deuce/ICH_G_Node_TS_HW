@@ -12,6 +12,8 @@ import {
   confirmDeleteController,
   updatePublicDataController,
   updateEmailController,
+  confirmUpdateEmailController,
+  saveNewEmailController,
 } from "../controllers/users.controller";
 
 const usersRouter = Router();
@@ -35,9 +37,9 @@ usersRouter.put(
 
 usersRouter.get(
   "/email",
-  authenticate,
-  validateBody(emailSchema),
-  updateEmailController
+  checkConfirmationByEmail,
+  confirmUpdateEmailController
 );
+usersRouter.get("/new-email", checkConfirmationByEmail, saveNewEmailController);
 
 export default usersRouter;

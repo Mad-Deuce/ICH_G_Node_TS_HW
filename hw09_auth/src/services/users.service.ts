@@ -102,7 +102,7 @@ export const changeEmail = async (user: any, newEmail: string) => {
 
 export const confirmChangeEmail = async (
   user: any,
-  newEmail: string | undefined
+  newEmail: any
 ) => {
   if (!newEmail) throw new HttpError(400, "New email not found");
 
@@ -120,7 +120,7 @@ export const confirmChangeEmail = async (
 
 export const confirmNewEmail = async (
   user: any,
-  newEmail: string | undefined
+  newEmail: any
 ) => {
   if (!newEmail) throw new HttpError(400, "New email not found");
   await user.update({ email: newEmail });
