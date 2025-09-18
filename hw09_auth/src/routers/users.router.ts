@@ -3,18 +3,21 @@ import { Router } from "express";
 import authenticate from "../middlewares/authenticate";
 import checkConfirmationByEmail from "../middlewares/checkConfirmationByEmail";
 
+import checkRole from "../decorators/checkRole";
 import validateBody from "../decorators/validateBody";
 import { updateSchema } from "../validation/schemas/auth.schemas";
-import { emailSchema } from "../validation/schemas/user.schemas";
+import { emailSchema, roleSchema } from "../validation/schemas/user.schemas";
 
 import {
   deleteController,
   confirmDeleteController,
   updatePublicDataController,
   updateEmailController,
-  confirmUpdateEmailController,
-  saveNewEmailController,
+  confirmCurrentEmailController,
+  confirmNewEmailController,
+  updateRoleController
 } from "../controllers/users.controller";
+
 
 const usersRouter = Router();
 
@@ -38,8 +41,20 @@ usersRouter.put(
 usersRouter.get(
   "/email",
   checkConfirmationByEmail,
-  confirmUpdateEmailController
+  confirmCurrentEmailController
 );
-usersRouter.get("/new-email", checkConfirmationByEmail, saveNewEmailController);
+usersRouter.get(
+  "/new-email",
+  checkConfirmationByEmail,
+  confirmNewEmailController
+);
+
+usersRouter.put(
+  "/:id/role",
+  authenticate, 
+  checkRole(["super"]),
+  validateBody(roleSchema),
+  updateRoleController
+);
 
 export default usersRouter;

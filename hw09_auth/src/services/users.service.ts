@@ -87,20 +87,23 @@ export const updatePublicData = async (user: Model, newUserData: any) => {
   };
 };
 
-export const changeEmail = async (user: any, newEmail: string) => {
+export const sendConfirmationMessageToCurrentEmail = async (
+  user: any,
+  newEmail: string
+) => {
   const { email } = user;
   const { confirmationToken } = createTokens({ email });
 
   const verifyEmail = {
     to: email,
     subject: "Confirm email change",
-    html: `<a href="${BASE_URL}/api/users/email?token=${confirmationToken}&new_email=${newEmail}" target="_blank">Confirm email change to ${newEmail}</a>`,
+    html: `<a href="${BASE_URL}/api/users/email?token=${confirmationToken}&new_email=${newEmail}" target="_blank">Confirm change email address to ${newEmail}</a>`,
   };
 
   await sendEmail(verifyEmail);
 };
 
-export const confirmChangeEmail = async (
+export const sendConfirmationMessageToNewEmail = async (
   user: any,
   newEmail: any
 ) => {
@@ -118,10 +121,20 @@ export const confirmChangeEmail = async (
   await sendEmail(verifyNewEmail);
 };
 
-export const confirmNewEmail = async (
-  user: any,
-  newEmail: any
-) => {
+export const updateEmail = async (user: any, newEmail: any) => {
   if (!newEmail) throw new HttpError(400, "New email not found");
   await user.update({ email: newEmail });
+};
+
+export const updateRole = async (userId: any, newRole: string) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new HttpError(404, `User wit id: ${userId} not found`);
+  }
+  const role = await  Role.findOne({ where: { name: newRole } });
+  if (!role) {
+    throw new HttpError(404, `Role: ${newRole} not found`);
+  }
+
+  await user.update({ roleId: role.get("id") });
 };

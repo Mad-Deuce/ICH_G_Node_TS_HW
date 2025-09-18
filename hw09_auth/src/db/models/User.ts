@@ -2,10 +2,7 @@ import { DataTypes } from "sequelize";
 
 import sequelize from "../sequelize";
 
-import {
-  emailPattern,
-  passwordPattern,
-} from "../../validation/patterns/auth.patterns";
+import { emailPattern } from "../../validation/patterns/auth.patterns";
 
 const User = sequelize.define("user", {
   email: {
@@ -36,7 +33,7 @@ const User = sequelize.define("user", {
   roleId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 2,
+    defaultValue: 3,
     references: {
       model: "roles",
       key: "id",
