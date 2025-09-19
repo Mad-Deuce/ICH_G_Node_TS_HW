@@ -1,0 +1,64 @@
+{
+  "info": {
+    "_postman_id": "d966fabe-9ce0-419c-aca6-81645faf08b6",
+    "name": "Products API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "23388335"
+  },
+  "item": [
+    {
+      "name": "all_products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "products_by_id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/products/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "add_product",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Product Three\",\r\n    \"price\": 99.99\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
