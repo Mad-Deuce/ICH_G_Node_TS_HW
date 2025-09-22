@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { UniqueConstraintError, ValidationError } from "sequelize";
 import { JsonWebTokenError } from "jsonwebtoken";
 
-import HttpError from "../utils/HttpError";
 
 const errorHandler = (error: any, req: Request, res: Response, next: any) => {
   console.log(error);
