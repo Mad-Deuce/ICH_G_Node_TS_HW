@@ -3,7 +3,6 @@ import cors from "cors";
 
 import notFoundHandler from "./middlewares/notFoundHandler";
 import errorHandler from "./middlewares/errorHandler";
-import productsRouter from "./routers/products.router";
 import publishersRouter from "./routers/publishers.router";
 import magazinesRouter from "./routers/magazines.router";
 import tagsRouter from "./routers/tags.router";
@@ -14,7 +13,6 @@ const startServer = () => {
   app.use(cors());
   app.use(express.json());
 
-  app.use("/api/products", productsRouter);
   app.use("/api/publishers", publishersRouter);
   app.use("/api/magazines", magazinesRouter);
   app.use("/api/articles", articlesRouter);
