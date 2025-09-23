@@ -1,0 +1,20 @@
+{
+  "name": "hw16_ts",
+  "version": "1.0.0",
+  "description": "Домашняя работа 16",
+  "license": "ISC",
+  "author": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node ./src/index.ts",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "npx tsc"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {}
+}
