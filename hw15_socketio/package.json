@@ -1,16 +1,15 @@
 {
-  "name": "hw14_mongoose_join",
+  "name": "hw16_socketio",
   "version": "1.0.0",
-  "description": "Домашняя работа 14",
+  "description": "hw16_socketio",
   "license": "ISC",
   "author": "",
-  "main": "src/index.ts",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docker:up": "docker-compose up",
-    "start": "ts-node ./src/index.ts",
-    "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "npx tsc"
+    "start": "npm run build && node dist/index",
+    "dev": "nodemon src/index",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -23,7 +22,6 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "joi": "^18.0.1",
-    "mongoose": "^8.18.1"
+    "socket.io": "^4.8.1"
   }
 }

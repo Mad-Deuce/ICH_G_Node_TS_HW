@@ -1,10 +1,10 @@
 import "dotenv/config";
 import startServer from "./server";
-import connectDatabase from "./db/connectDatabase";
+import startWebSocketServer from "./wsServer";
 
-const bootstrap = async ()=>{
-    await connectDatabase();
-    startServer();
-}
+const bootstrap = async (): Promise<void> => {
+  startServer();
+  startWebSocketServer();
+};
 
-bootstrap()
+bootstrap();

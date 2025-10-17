@@ -1,18 +1,21 @@
-import express from "express";
+import express, { Express } from "express";
 import cors from "cors";
+import path from "node:path";
 
 import notFoundHandler from "./middlewares/notFoundHandler";
 import errorHandler from "./middlewares/errorHandler";
-import productRouter from "./routers/product.router";
-import categoryRouter from "./routers/category.router";
 
-const startServer = () => {
-  const app = express();
-  app.use(cors());
+
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+};
+
+const startServer = (): void => {
+  const app: Express = express();
+  app.use(cors(corsOptions));
   app.use(express.json());
-
-  app.use("/api/products", productRouter);
-  app.use("/api/categories", categoryRouter);
+  app.use(express.static(path.resolve("public")));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

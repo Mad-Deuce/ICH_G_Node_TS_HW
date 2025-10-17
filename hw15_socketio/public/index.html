@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Some title</h1>
+    <input type="text" id="input" />
+    <button type="submit" id="send-btn">Send</button>
+
+    <ul id="message-list"></ul>
+
+
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <!-- <script src="node_modules/socket.io/client-dist/socket.io.js"></script> -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <!-- <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script> -->
+    <script>
+        const socket = io("http://localhost:5000");
+
+        const messageList = document.getElementById("message-list");
+        const input = document.getElementById("input");
+        const sendBtn = document.getElementById("send-btn");
+
+
+        socket.on('connect', () => {
+            console.log("connect")
+            messageList.insertAdjacentHTML("beforeend", "<li>Successfully connected</li>");
+        })
+        socket.on("disconnect", event => {
+            if (event.wasClean) {
+                messageList.insertAdjacentHTML("beforeend", `<li>${event.reason}</li>`)
+            }
+            else {
+                messageList.insertAdjacentHTML("beforeend", `<li>Server crushed</li>`)
+            }
+        })
+        socket.on('response', (response) => {
+            console.log("response: ", response)
+            messageList.insertAdjacentHTML("beforeend", `<li>${response}</li>`);
+        })
+
+
+        sendBtn.addEventListener("click", () => {
+            console.log(input.value);
+            socket.emit("message", input.value)
+        })
+
+
+
+        // const ws = new WebSocket("ws://localhost:5000");
+        // ws.onopen = ()=> {
+        //   console.log("connect")
+        // }
+
+        // socket.addEventListener("open", () => {
+        //     messageList.insertAdjacentHTML("beforeend", "<li>Successfully connected</li>");
+        //     closeSocketBtn.classList.remove("hidden");
+        //     closeSocketBtn.addEventListener("click", () => {
+        //         ws.close(1000, "Close connect");
+        //     })
+        // })
+
+        // socket.addEventListener("message", (event) => {
+        //     messageList.insertAdjacentHTML("beforeend", `<li>${event.data}</li>`)
+        // })
+
+        // socket.addEventListener("close", event => {
+        //     if (event.wasClean) {
+        //         messageList.insertAdjacentHTML("beforeend", `<li>${event.reason}</li>`)
+        //     }
+        //     else {
+        //         messageList.insertAdjacentHTML("beforeend", `<li>Server crushed</li>`)
+        //     }
+        // })
+    </script>
+</body>
+
+</html>
